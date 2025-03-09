@@ -9,7 +9,9 @@ RUN mkdir -p /tmp/cdi/logs
 WORKDIR /app
 
 # Copy package files and install dependencies
-COPY package.json ./
+COPY package*.json ./
+COPY postcss.config.js ./
+COPY tailwind.config.ts ./
 RUN npm install --legacy-peer-deps
 
 # Copy application code
@@ -22,6 +24,9 @@ RUN chmod +x /usr/local/bin/scan_smart.py
 # Add a cron job to run the scan every hour
 RUN echo "0 * * * * /usr/local/bin/scan_smart.py" > /etc/crontabs/root
 
+# Build the application
+RUN npm run build
+
 # Expose port
 EXPOSE 3000
 
@@ -30,5 +35,5 @@ ENV PORT=3000
 ENV NODE_ENV=production
 
 # Start both the cron daemon and Next.js
-CMD crond -b && npm run dev
+CMD crond -b && npm run start
 
