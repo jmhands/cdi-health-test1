@@ -2,6 +2,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Progress } from "@/components/ui/progress"
+import { cn } from "@/lib/utils"
 
 interface SmartAttribute {
   id: number
@@ -113,14 +114,14 @@ export function SmartAttributesTable({ deviceType, smartAttributes }: SmartAttri
                 <div className="flex items-center gap-2">
                   <Progress
                     value={Number.parseInt(attribute.value.toString())}
-                    className="h-2"
-                    indicatorClassName={
-                      attribute.status === "critical"
-                        ? "bg-red-500"
+                    className={cn(
+                      "h-2",
+                      attribute.status === "critical" 
+                        ? "bg-red-500" 
                         : attribute.status === "warning"
-                          ? "bg-amber-500"
-                          : "bg-green-500"
-                    }
+                        ? "bg-yellow-500"
+                        : "bg-green-500"
+                    )}
                   />
                   <span className="text-xs">
                     {attribute.status === "critical" ? "Critical" : attribute.status === "warning" ? "Warning" : "Good"}
