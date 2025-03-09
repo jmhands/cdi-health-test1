@@ -309,19 +309,78 @@ interface SmartctlResponse {
 
 export async function getAllDrives(): Promise<ParsedDriveData[]> {
   try {
-    const response = await fetch('/api/drives')
-
+    const response = await fetch('/api/drives');
     if (!response.ok) {
-      throw new Error(`Failed to fetch drives: ${response.statusText}`)
+      throw new Error(`Failed to fetch drives: ${response.statusText}`);
     }
-
-    const data: SmartctlResponse = await response.json()
-    
-    // Parse each drive's SMART data into our app's format
-    return data.drives.map(drive => parseSmartctlData(drive))
+    const data = await response.json();
+    return data.drives.map(parseDeviceData);
   } catch (error) {
-    console.error('Error fetching drives:', error)
-    throw error
+    console.error('Error fetching drives:', error);
+    throw error;
   }
+}
+
+// Update the interfaces to match CDI data structure
+export interface CDIDevice {
+  dut: string;  // device path
+  serial_number: string;
+  vendor: string;
+  model_number: string;
+  firmware_revision: string;
+  transport_protocol: string;
+  media_type: string;
+  size: number;
+  smart_status: boolean;
+  cdi_grade: string;
+  cdi_eligible: boolean;
+  cdi_certified: boolean;
+  state: string;
+  flags: string[];
+  power_on_hours: number;
+  temperature: {
+    current: number;
+    maximum: number;
+    minimum: number;
+  };
+  reallocated_sectors: number;
+  pending_sectors: number;
+  offline_uncorrectable_sectors: number;
+  smart_attributes: Array<{
+    id: number;
+    name: string;
+    value: number;
+    worst: number;
+    thresh: number;
+    raw_value: number;
+  }>;
+}
+
+export function parseDeviceData(data: CDIDevice) {
+  return {
+    id: data.serial_number,
+    serialNumber: data.serial_number,
+    model: data.model_number,
+    type: data.transport_protocol,
+    vendor: data.vendor,
+    firmware: data.firmware_revision,
+    capacity: `${data.size} GB`,
+    health: data.smart_status ? "healthy" : "critical",
+    temperature: data.temperature?.current || 0,
+    powerOnHours: data.power_on_hours,
+    mediaErrors: data.offline_uncorrectable_sectors,
+    criticalWarning: !data.smart_status,
+    grade: data.cdi_grade,
+    flags: data.flags,
+    reallocatedSectors: data.reallocated_sectors,
+    smartAttributes: data.smart_attributes?.map(attr => ({
+      id: attr.id,
+      name: attr.name,
+      value: attr.value,
+      raw: attr.raw_value.toString(),
+      status: attr.value < attr.thresh ? "critical" : 
+              attr.value < attr.thresh + 20 ? "warning" : "good"
+    }))
+  };
 }
 
