@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  cdi-health-grading:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /dev/disk*:/dev/disk*:ro
+    environment:
+      - NODE_ENV=development
+    privileged: true
+    restart: unless-stopped
+

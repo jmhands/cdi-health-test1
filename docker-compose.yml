@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  cdi-health-grading:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - /dev:/dev:ro
+      - /run/udev:/run/udev:ro
+    devices:
+      - /dev/nvme0n1:/dev/nvme0n1
+      - /dev/sda:/dev/sda
+    privileged: true
+    restart: unless-stopped
+    cap_add:
+      - SYS_RAWIO
+      - SYS_ADMIN
+
