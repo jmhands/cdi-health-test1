@@ -301,20 +301,28 @@ export async function getSmartctlData(devicePath: string): Promise<ParsedDriveDa
   }
 }
 
-// Function to get all available drives
-export async function getAllDrives(): Promise<ParsedDriveData[]> {
+interface SmartctlResponse {
+  success: boolean;
+  allDevices: Array<{device: string, data: any}>;
+  validDrives: Array<{device: string, data: any}>;
+  timestamp: string;
+}
+
+export async function getAllDrives(): Promise<SmartctlData[]> {
   try {
-    const response = await fetch("/api/drives")
+    const response = await fetch('/api/drives')
 
     if (!response.ok) {
       throw new Error(`Failed to fetch drives: ${response.statusText}`)
     }
 
-    const data: SmartctlData[] = await response.json()
-    return data.map(parseSmartctlData)
+    const data: SmartctlResponse = await response.json()
+    
+    // Return either validDrives or allDevices based on your needs
+    return data.validDrives.map(drive => drive.data)
   } catch (error) {
-    console.error("Error fetching drives:", error)
-    return []
+    console.error('Error fetching drives:', error)
+    throw error
   }
 }
 
