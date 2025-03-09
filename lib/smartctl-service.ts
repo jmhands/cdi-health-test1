@@ -303,12 +303,11 @@ export async function getSmartctlData(devicePath: string): Promise<ParsedDriveDa
 
 interface SmartctlResponse {
   success: boolean;
-  allDevices: Array<{device: string, data: any}>;
-  validDrives: Array<{device: string, data: any}>;
+  drives: Array<SmartctlData>;
   timestamp: string;
 }
 
-export async function getAllDrives(): Promise<SmartctlData[]> {
+export async function getAllDrives(): Promise<ParsedDriveData[]> {
   try {
     const response = await fetch('/api/drives')
 
@@ -318,8 +317,8 @@ export async function getAllDrives(): Promise<SmartctlData[]> {
 
     const data: SmartctlResponse = await response.json()
     
-    // Return either validDrives or allDevices based on your needs
-    return data.validDrives.map(drive => drive.data)
+    // Parse each drive's SMART data into our app's format
+    return data.drives.map(drive => parseSmartctlData(drive))
   } catch (error) {
     console.error('Error fetching drives:', error)
     throw error

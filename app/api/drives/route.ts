@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
+import { promises as fs } from 'fs';
 import path from 'path';
+import { SmartctlData } from '@/lib/smartctl-service';
 
 const LOG_DIR = '/tmp/cdi/logs';
 
@@ -8,13 +9,13 @@ export async function GET() {
   try {
     // Read all JSON files from log directory
     const files = await fs.readdir(LOG_DIR);
-    const jsonFiles = files.filter(f => f.endsWith('.json'));
+    const jsonFiles = files.filter((f: string) => f.endsWith('.json'));
     
     // Read and parse each file
     const drives = await Promise.all(
-      jsonFiles.map(async (file) => {
+      jsonFiles.map(async (file: string) => {
         const content = await fs.readFile(path.join(LOG_DIR, file), 'utf-8');
-        return JSON.parse(content);
+        return JSON.parse(content) as SmartctlData;
       })
     );
     
