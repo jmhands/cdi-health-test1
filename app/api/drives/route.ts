@@ -1,9 +1,21 @@
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { SmartctlData } from '@/lib/smartctl-service';
 
 const LOG_DIR = '/tmp/cdi/logs';
+
+interface SmartData {
+  device_path: string;
+  timestamp: string;
+  serial_number: string;
+  model_name: string;
+  vendor: string;
+  cdi_grade: string;
+  smart_status: {
+    passed: boolean;
+  };
+  // ... other fields from smartctl
+}
 
 export async function GET() {
   try {
@@ -15,13 +27,17 @@ export async function GET() {
     const drives = await Promise.all(
       jsonFiles.map(async (file: string) => {
         const content = await fs.readFile(path.join(LOG_DIR, file), 'utf-8');
-        return JSON.parse(content) as SmartctlData;
+        return JSON.parse(content) as SmartData;
       })
     );
     
     return NextResponse.json({
       success: true,
-      drives,
+      drives: drives.map(drive => ({
+        ...drive,
+        health: drive.smart_status?.passed ? 'healthy' : 'critical',
+        grade: drive.cdi_grade || 'U'
+      })),
       timestamp: new Date().toISOString()
     });
     

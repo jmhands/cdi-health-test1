@@ -22,10 +22,7 @@ RUN npm run build
 FROM node:20-alpine
 
 # Install Python and smartmontools
-RUN apk add --no-cache python3 smartmontools
-
-# Create log directory
-RUN mkdir -p /tmp/cdi/logs
+RUN apk add --no-cache python3 py3-pip smartmontools
 
 WORKDIR /app
 
@@ -35,11 +32,26 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/public ./public
 
-# Copy the scan script and make it executable
+# Create scripts directory and copy Python scripts
+RUN mkdir -p /usr/local/bin
 COPY scripts/scan_smart.py /usr/local/bin/
+COPY scripts/devices.py /usr/local/lib/python3.*/site-packages/
 RUN chmod +x /usr/local/bin/scan_smart.py
 
-# Add a cron job to run the scan every hour
+# Create log directory
+RUN mkdir -p /tmp/cdi/logs
+
+# Create startup script
+RUN echo '#!/bin/sh' > /start.sh && \
+    echo 'echo "Running initial drive scan..."' >> /start.sh && \
+    echo '/usr/local/bin/scan_smart.py' >> /start.sh && \
+    echo 'echo "Starting cron daemon..."' >> /start.sh && \
+    echo 'crond -b' >> /start.sh && \
+    echo 'echo "Starting Next.js..."' >> /start.sh && \
+    echo 'exec npm run start' >> /start.sh && \
+    chmod +x /start.sh
+
+# Add cron job to run scan every hour
 RUN echo "0 * * * * /usr/local/bin/scan_smart.py" > /etc/crontabs/root
 
 EXPOSE 3000
@@ -47,6 +59,6 @@ EXPOSE 3000
 ENV PORT=3000
 ENV NODE_ENV=production
 
-# Start both the cron daemon and Next.js
-CMD crond -b && npm run start
+# Use exec form of CMD to handle signals properly
+CMD ["/start.sh"]
 
