@@ -24,5 +24,5 @@ ENV PORT=3000
 ENV NODE_ENV=production
 
 # Run the application
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]
 
