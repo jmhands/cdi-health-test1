@@ -1,96 +1,137 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { HealthTrendChart } from "./charts/health-trend-chart"
-import { TemperatureDistributionChart } from "./charts/temperature-distribution-chart"
-import { VendorDistributionChart } from "./charts/vendor-distribution-chart"
-import { AgeDistributionChart } from "./charts/age-distribution-chart"
-import { DonutChart } from "./charts/donut-chart"
-import { BarChart } from "./charts/bar-chart"
+import { Card } from 'flowbite-react';
+import { DriveAnalytics } from './drive-analytics';
+import { ParsedDriveData } from '@/lib/smartctl-service';
 
-export function Analytics() {
-  return (
-    <div className="grid gap-4">
-      <Card className="col-span-full">
-        <CardHeader>
-          <CardTitle>Analytics Dashboard</CardTitle>
-          <CardDescription>Analyze trends and patterns across your storage device population</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="health" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="health">Health Trends</TabsTrigger>
-              <TabsTrigger value="temperature">Temperature</TabsTrigger>
-              <TabsTrigger value="vendors">Vendors</TabsTrigger>
-              <TabsTrigger value="age">Age Distribution</TabsTrigger>
-            </TabsList>
-            <TabsContent value="health" className="space-y-4">
-              <HealthTrendChart />
-            </TabsContent>
-            <TabsContent value="temperature" className="space-y-4">
-              <TemperatureDistributionChart />
-            </TabsContent>
-            <TabsContent value="vendors" className="space-y-4">
-              <VendorDistributionChart />
-            </TabsContent>
-            <TabsContent value="age" className="space-y-4">
-              <AgeDistributionChart />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-    </div>
-  )
+interface AnalyticsProps {
+  drives: ParsedDriveData[];
 }
 
-export function DriveAnalytics({ drives }: { drives: ParsedDriveData[] }) {
-  // Calculate real statistics
+export function Analytics({ drives }: AnalyticsProps) {
+  // Calculate summary statistics
   const totalDrives = drives.length;
   const healthyDrives = drives.filter(d => d.health === "healthy").length;
+  const warningDrives = drives.filter(d => d.health === "warning").length;
   const criticalDrives = drives.filter(d => d.health === "critical").length;
   
-  const gradeDistribution = drives.reduce((acc, drive) => {
-    acc[drive.grade] = (acc[drive.grade] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const avgTemp = Math.round(drives.reduce((sum, d) => sum + d.temperature, 0) / totalDrives);
+  const totalErrors = drives.reduce((sum, d) => sum + d.mediaErrors, 0);
 
-  const averageTemp = drives.reduce((sum, drive) => sum + drive.temperature, 0) / totalDrives;
-  
-  const totalErrors = drives.reduce((sum, drive) => sum + drive.mediaErrors, 0);
-
-  // Use these real values in your charts
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Drive Health</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DonutChart
-            data={[
-              { name: "Healthy", value: healthyDrives },
-              { name: "Critical", value: criticalDrives }
-            ]}
-          />
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>CDI Grades</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BarChart
-            data={Object.entries(gradeDistribution).map(([grade, count]) => ({
-              name: grade,
-              value: count
-            }))}
-          />
-        </CardContent>
-      </Card>
+    <div className="space-y-6">
+      {/* Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="max-w-sm">
+          <div className="flex flex-col items-center">
+            <h5 className="mb-1 text-xl font-medium text-gray-900 dark:text-white">
+              Total Drives
+            </h5>
+            <span className="text-3xl font-bold text-gray-700 dark:text-gray-400">
+              {totalDrives}
+            </span>
+          </div>
+        </Card>
 
-      {/* Add more real analytics as needed */}
+        <Card className="max-w-sm">
+          <div className="flex flex-col items-center">
+            <h5 className="mb-1 text-xl font-medium text-green-600">
+              Healthy Drives
+            </h5>
+            <span className="text-3xl font-bold text-green-500">
+              {healthyDrives}
+            </span>
+          </div>
+        </Card>
+
+        <Card className="max-w-sm">
+          <div className="flex flex-col items-center">
+            <h5 className="mb-1 text-xl font-medium text-yellow-600">
+              Warning Drives
+            </h5>
+            <span className="text-3xl font-bold text-yellow-500">
+              {warningDrives}
+            </span>
+          </div>
+        </Card>
+
+        <Card className="max-w-sm">
+          <div className="flex flex-col items-center">
+            <h5 className="mb-1 text-xl font-medium text-red-600">
+              Critical Drives
+            </h5>
+            <span className="text-3xl font-bold text-red-500">
+              {criticalDrives}
+            </span>
+          </div>
+        </Card>
+      </div>
+
+      {/* Additional Statistics */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <div className="mb-4 flex items-center justify-between">
+            <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">
+              Temperature Overview
+            </h5>
+          </div>
+          <div className="flow-root">
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+              <li className="py-3 sm:py-4">
+                <div className="flex items-center space-x-4">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                      Average Temperature
+                    </p>
+                  </div>
+                  <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                    {avgTemp}°C
+                  </div>
+                </div>
+              </li>
+              <li className="py-3 sm:py-4">
+                <div className="flex items-center space-x-4">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                      Total Media Errors
+                    </p>
+                  </div>
+                  <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                    {totalErrors}
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </Card>
+
+        <Card>
+          <div className="mb-4 flex items-center justify-between">
+            <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">
+              Health Distribution
+            </h5>
+          </div>
+          <div className="flex items-center justify-center py-6">
+            <div className="flex space-x-3">
+              <div className="flex items-center">
+                <div className="h-2.5 w-2.5 rounded-full bg-green-500 mr-2"></div>
+                <span className="text-sm font-medium text-gray-900">Healthy ({Math.round(healthyDrives/totalDrives*100)}%)</span>
+              </div>
+              <div className="flex items-center">
+                <div className="h-2.5 w-2.5 rounded-full bg-yellow-500 mr-2"></div>
+                <span className="text-sm font-medium text-gray-900">Warning ({Math.round(warningDrives/totalDrives*100)}%)</span>
+              </div>
+              <div className="flex items-center">
+                <div className="h-2.5 w-2.5 rounded-full bg-red-500 mr-2"></div>
+                <span className="text-sm font-medium text-gray-900">Critical ({Math.round(criticalDrives/totalDrives*100)}%)</span>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Detailed Analytics */}
+      <DriveAnalytics drives={drives} />
     </div>
   );
 }
