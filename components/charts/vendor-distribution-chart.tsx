@@ -13,26 +13,11 @@ const data = [
 
 export function VendorDistributionChart() {
   return (
-    <ResponsiveContainer width="100%" height={400}>
-      <PieChart>
-        <Pie
-          data={data}
-          cx="50%"
-          cy="50%"
-          labelLine={false}
-          outerRadius={120}
-          fill="#8884d8"
-          dataKey="value"
-          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-        >
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.color} />
-          ))}
-        </Pie>
-        <Tooltip formatter={(value) => [`${value} devices`, "Count"]} />
-        <Legend />
-      </PieChart>
-    </ResponsiveContainer>
-  )
+    <div className="p-4">
+      <div className="text-center text-gray-500">
+        Vendor distribution data will be implemented in a future update
+      </div>
+    </div>
+  );
 }
 

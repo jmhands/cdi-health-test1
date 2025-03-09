@@ -80,18 +80,11 @@ const data = [
 
 export function HealthTrendChart() {
   return (
-    <ResponsiveContainer width="100%" height={400}>
-      <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="month" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-        <Tooltip />
-        <Legend />
-        <Line type="monotone" dataKey="healthy" name="Healthy" stroke="#4ade80" strokeWidth={2} />
-        <Line type="monotone" dataKey="warning" name="Warning" stroke="#fbbf24" strokeWidth={2} />
-        <Line type="monotone" dataKey="critical" name="Critical" stroke="#f87171" strokeWidth={2} />
-      </LineChart>
-    </ResponsiveContainer>
-  )
+    <div className="p-4">
+      <div className="text-center text-gray-500">
+        Health trend data will be implemented in a future update
+      </div>
+    </div>
+  );
 }
 

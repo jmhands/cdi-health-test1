@@ -32,15 +32,11 @@ const data = [
 
 export function AgeDistributionChart() {
   return (
-    <ResponsiveContainer width="100%" height={400}>
-      <BarChart data={data}>
-        <XAxis dataKey="range" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="count" name="Device Count" fill="#a855f7" radius={[4, 4, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
-  )
+    <div className="p-4">
+      <div className="text-center text-gray-500">
+        Age distribution data will be implemented in a future update
+      </div>
+    </div>
+  );
 }
 
