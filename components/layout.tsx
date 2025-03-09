@@ -4,6 +4,7 @@ import { Navbar, Sidebar } from 'flowbite-react';
 import { HiChartPie, HiDatabase, HiHome } from 'react-icons/hi';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Suspense } from 'react';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -12,7 +13,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Top Navigation */}
       <Navbar fluid className="border-b border-gray-200 dark:border-gray-700">
-        <Navbar.Brand href="/">
+        <Navbar.Brand as={Link} href="/">
           <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
             CDI Health Dashboard
           </span>
@@ -54,7 +55,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Main Content */}
         <main className="flex-1 p-4 md:p-6">
-          {children}
+          <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <div className="text-lg text-gray-600">Loading...</div>
+            </div>
+          }>
+            {children}
+          </Suspense>
         </main>
       </div>
     </div>
